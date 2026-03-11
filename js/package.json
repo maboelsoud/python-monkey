@@ -1,0 +1,59 @@
+{
+  "name": "python-monkey",
+  "version": "0.1.0",
+  "description": "See your Python backend logs in browser DevTools. Like console.log() for Python.",
+  "author": "Mohamed Aboelsoud",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/maboelsoud/python-monkey.git",
+    "directory": "js"
+  },
+  "keywords": [
+    "python",
+    "logging",
+    "devtools",
+    "websocket",
+    "debug",
+    "console",
+    "browser"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.mjs",
+      "require": "./dist/react.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": ">=17.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "react": "^18.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "@types/react": "^18.0.0"
+  }
+}

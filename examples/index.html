@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PythonMonkey Demo</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      text-align: center;
+      max-width: 600px;
+      padding: 2rem;
+    }
+    h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .emoji { font-size: 4rem; margin-bottom: 1rem; }
+    .subtitle { color: #8888aa; margin-bottom: 2rem; font-size: 1.1rem; }
+    .status {
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+      font-size: 0.9rem;
+    }
+    .status.connecting { background: #2a2a4a; color: #aaa; }
+    .status.connected { background: #1a3a2a; color: #4f4; }
+    .status.disconnected { background: #3a1a1a; color: #f44; }
+    button {
+      background: #4a4aff;
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover { background: #6a6aff; }
+    button:active { background: #3a3aee; }
+    .instructions {
+      margin-top: 2rem;
+      color: #666;
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+    code {
+      background: #2a2a4a;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="emoji">🐒</div>
+    <h1>PythonMonkey</h1>
+    <p class="subtitle">Python logs in your browser DevTools</p>
+    <div id="status" class="status connecting">Connecting...</div>
+    <button onclick="triggerLogs()">Trigger Python Logs</button>
+    <div class="instructions">
+      <p>1. Open DevTools (<code>Cmd+Option+I</code> / <code>F12</code>)</p>
+      <p>2. Go to the <strong>Console</strong> tab</p>
+      <p>3. Click the button above</p>
+      <p>4. Watch Python objects appear as rich, inspectable values</p>
+    </div>
+  </div>
+
+  <script type="module">
+    import { PythonMonkey } from '../js/dist/index.mjs';
+
+    const statusEl = document.getElementById('status');
+
+    const monkey = new PythonMonkey({
+      url: 'ws://localhost:8000/ws/python-monkey',
+      enabled: true,
+    });
+
+    monkey.connect();
+
+    const originalLog = console.log;
+    const checkConnection = setInterval(() => {
+      // Poll connection state via the monkey's internal ws
+      // Since we can't access private fields, we watch for the console messages
+    }, 1000);
+
+    const observer = new MutationObserver(() => {});
+
+    // Simple status update based on console output
+    const origLog = console.log;
+    console.log = function (...args) {
+      origLog.apply(console, args);
+      const msg = args[0];
+      if (typeof msg === 'string') {
+        if (msg.includes('[PythonMonkey] Connected')) {
+          statusEl.textContent = 'Connected';
+          statusEl.className = 'status connected';
+        } else if (msg.includes('[PythonMonkey] Disconnected')) {
+          statusEl.textContent = 'Disconnected - reconnecting...';
+          statusEl.className = 'status disconnected';
+        }
+      }
+    };
+
+    window.triggerLogs = async function () {
+      try {
+        const res = await fetch('http://localhost:8000/demo');
+        const data = await res.json();
+        statusEl.textContent = 'Connected - logs sent!';
+        setTimeout(() => {
+          statusEl.textContent = 'Connected';
+        }, 2000);
+      } catch (e) {
+        statusEl.textContent = 'Error: Is the server running? (python examples/server.py)';
+        statusEl.className = 'status disconnected';
+      }
+    };
+  </script>
+</body>
+</html>

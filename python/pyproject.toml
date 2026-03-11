@@ -30,3 +30,6 @@ classifiers = [
 Homepage = "https://github.com/maboelsoud/python-monkey"
 Repository = "https://github.com/maboelsoud/python-monkey"
 Issues = "https://github.com/maboelsoud/python-monkey/issues"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

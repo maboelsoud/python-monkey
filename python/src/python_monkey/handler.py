@@ -12,7 +12,7 @@ from functools import wraps
 from typing import Any
 
 from python_monkey.serializer import serialize
-from python_monkey.server import _broadcast_queue, _connected_clients
+import python_monkey.server as _server
 
 
 class MonkeyHandler(logging.Handler):
@@ -24,7 +24,7 @@ class MonkeyHandler(logging.Handler):
         self._dev_mode = dev_mode
 
     def emit(self, record: logging.LogRecord) -> None:
-        if not self._dev_mode or getattr(record, "_skip_monkey", False) or not _connected_clients:
+        if not self._dev_mode or getattr(record, "_skip_monkey", False) or not _server._connected_clients:
             return
         try:
             log_data = {
@@ -35,8 +35,8 @@ class MonkeyHandler(logging.Handler):
                 "filename": record.filename,
                 "lineno": record.lineno,
             }
-            if _broadcast_queue:
-                _broadcast_queue.put_nowait(json.dumps(log_data))
+            if _server._broadcast_queue:
+                _server._broadcast_queue.put_nowait(json.dumps(log_data))
         except Exception:
             pass
 
@@ -50,7 +50,7 @@ def monkey_log(
     _dev_mode: bool = True,
 ) -> None:
     """Log objects directly to browser DevTools. Like console.log() for Python."""
-    if not _dev_mode or not _connected_clients or not args:
+    if not _dev_mode or not _server._connected_clients or not args:
         return
     try:
         log_data = {
@@ -62,8 +62,8 @@ def monkey_log(
             "lineno": lineno,
             "stack_trace": stack_trace,
         }
-        if _broadcast_queue:
-            _broadcast_queue.put_nowait(json.dumps(log_data))
+        if _server._broadcast_queue:
+            _server._broadcast_queue.put_nowait(json.dumps(log_data))
     except Exception:
         pass
 
